@@ -11,6 +11,7 @@
 // Animations
 #include "FixedAnimation.h"
 #include "BreatheAnimation.h"
+#include "PulseAnimation.h"
 
 #ifdef USE_SERIAL
 TypedStream g_serialStream(&Serial, SERIAL_TIMEOUT);
@@ -69,6 +70,7 @@ AnimationCore g_animationCore(g_channels);
 // Animations
 FixedAnimation g_anim0;
 BreatheAnimation g_anim1;
+PulseAnimation g_anim2;
 
 void setup() {
 	// Set up state pin for output
@@ -102,6 +104,7 @@ void setup() {
 	// Initialize animations
 	g_animations[0] = &g_anim0;
 	g_animations[1] = &g_anim1;
+	g_animations[2] = &g_anim2;
 
 	for (uint8_t i = 0; i < ANIMATION_MAX_COUNT; i++) {
 		Animation *animation = g_animations[i];
