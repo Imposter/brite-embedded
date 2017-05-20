@@ -35,6 +35,10 @@ void Channel::SetLedCount(uint16_t ledCount) {
 	m_ledCount = ledCount;
 }
 
+Color Channel::GetLedColor(uint16_t i) const {
+	return ((Color *)m_pixels.getPixels())[i];
+}
+
 void Channel::SetLedColor(uint16_t i, uint32_t color) {
 	if (i >= m_ledCount)
 		return;

@@ -90,6 +90,7 @@
     <ClInclude Include="Channel.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="Config.h" />
+    <ClInclude Include="FadeAnimation.h" />
     <ClInclude Include="FixedAnimation.h" />
     <ClInclude Include="Hash.h" />
     <ClInclude Include="BreatheAnimation.h" />
@@ -102,6 +103,7 @@
     <ClCompile Include="AnimationCore.cpp" />
     <ClCompile Include="ATCommand.cpp" />
     <ClCompile Include="Channel.cpp" />
+    <ClCompile Include="FadeAnimation.cpp" />
     <ClCompile Include="FixedAnimation.cpp" />
     <ClCompile Include="Hash.cpp" />
     <ClCompile Include="BreatheAnimation.cpp" />

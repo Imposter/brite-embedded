@@ -12,10 +12,10 @@ void PulseAnimation::onAnimate(uint8_t channelIndex) {
 	AnimationCore *core = getCore();
 	Channel *channel = core->GetChannel(channelIndex);
 	uint8_t colors = core->GetChannelAnimationColorCount(channelIndex);
+	uint16_t ledCount = channel->GetLedCount();
+
 	uint8_t currentColorIndex = core->GetChannelAnimationCurrentColor(channelIndex);
 	Color currentColor = core->GetChannelAnimationColor(channelIndex, currentColorIndex);
-
-	uint16_t ledCount = channel->GetLedCount();
 
 	float &alpha = m_alpha[channelIndex];
 

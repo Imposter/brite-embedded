@@ -23,6 +23,7 @@ public:
 	const uint16_t &GetLedCount() const;
 	void SetLedCount(uint16_t ledCount);
 
+	Color GetLedColor(uint16_t i) const;
 	void SetLedColor(uint16_t i, uint32_t color);
 	void SetLedColor(uint16_t i, Color color);
 	void SetLedColor(uint16_t i, uint8_t r, uint8_t g, uint8_t b);
