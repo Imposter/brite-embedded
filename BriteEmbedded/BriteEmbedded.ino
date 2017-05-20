@@ -1,12 +1,15 @@
 #include "Config.h"
-#include "Animation.h"
-#include "ATCommand.h"
+#include "AnimationCore.h"
 #include "Hash.h"
 #include <avr/wdt.h>
+#include <EEPROM.h>
+#ifdef USE_BLUETOOTH_SERIAL
+#include "ATCommand.h"
 #include <AltSoftSerial.h>
-#include <eeprom.h>
+#endif
 
 // Animations
+#include "FixedAnimation.h"
 #include "BreatheAnimation.h"
 
 #ifdef USE_SERIAL
@@ -20,7 +23,8 @@ TypedStream g_btSerialStream(&g_btSerial, BLUETOOTH_SERIAL_TIMEOUT);
 
 #if defined(USE_SERIAL) || defined(USE_BLUETOOTH_SERIAL)
 enum Command : uint8_t {
-	kCommand_GetID = 0,
+	kCommand_GetVersion = 0,
+	kCommand_GetID,
 	kCommand_SetID,
 	kCommand_Reset,
 	kCommand_GetCapabilities,
@@ -30,10 +34,12 @@ enum Command : uint8_t {
 	kCommand_SetChannelLedCount,
 	kCommand_SetChannelAnimation,
 	kCommand_SetChannelAnimationEnabled,
+	kCommand_SetChannelAnimationSpeed,
+	kCommand_SetChannelAnimationColorCount,
+	kCommand_SetChannelAnimationColor,
 	kCommand_SetChannelAnimationData,
-	kCommand_SetChannelSpeed,
-	kCommand_SetChannelColorCount,
-	kCommand_SetChannelColor,
+
+	kCommand_Max,
 
 #ifdef USE_BLUETOOTH_SERIAL
 	kCommand_Bluetooth_GetPassword = 50,
@@ -41,6 +47,8 @@ enum Command : uint8_t {
 	kCommand_Bluetooth_UnpairAll,
 	kCommand_Bluetooth_GetStatus,
 	kCommand_Bluetooth_GetConnectionInfo,
+
+	kCommand_Bluetooth_Max
 #endif
 };
 
@@ -59,6 +67,7 @@ Animation *g_animations[ANIMATION_MAX_COUNT]{ 0 };
 AnimationCore g_animationCore(g_channels);
 
 // Animations
+FixedAnimation g_anim0;
 BreatheAnimation g_anim1;
 
 void setup() {
@@ -91,7 +100,8 @@ void setup() {
 	}
 	
 	// Initialize animations
-	g_animations[0] = &g_anim1;
+	g_animations[0] = &g_anim0;
+	g_animations[1] = &g_anim1;
 
 	for (uint8_t i = 0; i < ANIMATION_MAX_COUNT; i++) {
 		Animation *animation = g_animations[i];
@@ -142,7 +152,7 @@ void initializeBluetooth() {
 	EEPROM.get<uint32_t>(EEPROM_ID_LOCATION + sizeof(checkSum), id);
 
 	uint32_t hash = FNV1A32((uint8_t *)id, sizeof(id));
-	char name[3 + sizeof(id) *2 + 1] = "BC-";
+	char name[3 + sizeof(id) * 2 + 1] = "BC-";
 	if (checkSum == EEPROM_ID_CHECKSUM) {
 		snprintf(name + 3, sizeof(name) - 3, "%08X", id);
 	} else {
@@ -167,14 +177,27 @@ void handleStream(TypedStream &stream) {
 		// Read command
 		uint8_t command = 0;
 		if (stream.Read(command)) {
-			if (command == kCommand_GetID) {
+			if (command >=
+	#ifdef USE_BLUETOOTH_SERIAL
+				kCommand_Bluetooth_Max
+	#else
+				kCommand_Max
+	#endif
+				) return;
+
+			// Write command back to device
+			stream.Write(command);
+
+			if (command == kCommand_GetVersion) {
+				stream.SetDataTypeEnabled(true);
+				stream.WriteUInt32(FIRMWARE_VERSION);
+			} else if (command == kCommand_GetID) {
 				// Read checksum and ID from EEPROM
 				uint16_t checkSum = 0;
 				EEPROM.get<uint16_t>(EEPROM_ID_LOCATION, checkSum);
 				uint32_t id = 0;
 				EEPROM.get<uint32_t>(EEPROM_ID_LOCATION + sizeof(checkSum), id);
 
-				stream.Write(kCommand_GetID);
 				stream.SetDataTypeEnabled(true);
 				if (checkSum == EEPROM_ID_CHECKSUM) {
 					stream.WriteUInt8(kResult_Ok);
@@ -192,7 +215,6 @@ void handleStream(TypedStream &stream) {
 				uint16_t checkSum = 0;
 				EEPROM.get<uint16_t>(EEPROM_ID_LOCATION, checkSum);
 				
-				stream.Write(kCommand_SetID);
 				stream.SetDataTypeEnabled(true);
 				if (checkSum != EEPROM_ID_CHECKSUM) {
 					// Set ID
@@ -222,11 +244,9 @@ void handleStream(TypedStream &stream) {
 					g_animationCore.ResetChannel(i);
 				}
 
-				stream.Write(kCommand_Reset);
 				stream.SetDataTypeEnabled(true);
 				stream.WriteUInt8(kResult_Ok);
 			} else if (command == kCommand_GetCapabilities) {
-				stream.Write(kCommand_GetCapabilities);
 				stream.SetDataTypeEnabled(true);
 #ifdef USE_BLUETOOTH_SERIAL
 				stream.WriteBoolean(true);
@@ -234,7 +254,7 @@ void handleStream(TypedStream &stream) {
 				stream.WriteBoolean(false);
 #endif
 				stream.WriteUInt8(CHANNEL_COUNT);
-				stream.WriteUInt8(CHANNEL_MAX_SIZE);
+				stream.WriteUInt16(CHANNEL_MAX_SIZE);
 				stream.WriteUInt8(CHANNEL_MAX_BRIGHTNESS);
 				stream.WriteUInt8(ANIMATION_MAX_COLORS);
 				stream.WriteFloat(ANIMATION_MIN_SPEED);
@@ -245,7 +265,6 @@ void handleStream(TypedStream &stream) {
 					if (g_animations[animCount] == 0)
 						break;
 
-				stream.Write(kCommand_GetAnimations);
 				stream.SetDataTypeEnabled(true);
 				stream.WriteUInt8(animCount);
 				for (uint8_t i = 0; i < animCount; i++)
@@ -261,7 +280,6 @@ void handleStream(TypedStream &stream) {
 				if (!stream.ReadUInt8(brightness))
 					return;
 
-				stream.Write(kCommand_SetChannelBrightness);
 				if (channelIndex < CHANNEL_COUNT && brightness <= CHANNEL_MAX_BRIGHTNESS) {
 					Channel &channel = g_channels[channelIndex];
 					channel.SetBrightness(brightness);
@@ -281,7 +299,6 @@ void handleStream(TypedStream &stream) {
 				if (!stream.ReadUInt16(ledCount))
 					return;
 
-				stream.Write(kCommand_SetChannelLedCount);
 				if (channelIndex < CHANNEL_COUNT && ledCount >= 0 && ledCount < CHANNEL_MAX_SIZE) {
 					Channel &channel = g_channels[channelIndex];
 					channel.SetLedCount(ledCount);
@@ -312,7 +329,6 @@ void handleStream(TypedStream &stream) {
 				}
 
 				// Set channel animation
-				stream.Write(kCommand_SetChannelAnimation);
 				if (channelIndex < CHANNEL_COUNT && animation != 0) {
 					// Disable previous animation, if any
 					g_animationCore.SetChannelAnimationEnabled(channelIndex, false);
@@ -339,10 +355,72 @@ void handleStream(TypedStream &stream) {
 					return;
 
 				// Set channel animation enabled
-				stream.Write(kCommand_SetChannelAnimationEnabled);
 				Animation *animation = g_animationCore.GetChannelAnimation(channelIndex);
 				if (channelIndex < CHANNEL_COUNT && animation != 0) {
 					g_animationCore.SetChannelAnimationEnabled(channelIndex, enabled);
+					stream.WriteUInt8(kResult_Ok);
+				} else {
+					stream.WriteUInt8(kResult_Error);
+				}
+			} else if (command == kCommand_SetChannelAnimationSpeed) {
+				stream.SetDataTypeEnabled(true);
+
+				uint8_t channelIndex = 0;
+				if (!stream.ReadUInt8(channelIndex))
+					return;
+
+				float speed = 0;
+				if (!stream.ReadFloat(speed))
+					return;
+
+				if (channelIndex < CHANNEL_COUNT && speed >= ANIMATION_MIN_SPEED && speed <= ANIMATION_MAX_SPEED) {
+					g_animationCore.SetChannelAnimationSpeed(channelIndex, speed);
+					stream.WriteUInt8(kResult_Ok);
+				} else {
+					stream.WriteUInt8(kResult_Error);
+				}
+			} else if (command == kCommand_SetChannelAnimationColorCount) {
+				stream.SetDataTypeEnabled(true);
+
+				uint8_t channelIndex = 0;
+				if (!stream.ReadUInt8(channelIndex))
+					return;
+
+				uint8_t count = 0;
+				if (!stream.ReadUInt8(count))
+					return;
+
+				if (channelIndex < CHANNEL_COUNT && count <= ANIMATION_MAX_COLORS) {
+					g_animationCore.SetChannelAnimationColorCount(channelIndex, count);
+					stream.WriteUInt8(kResult_Ok);
+				} else {
+					stream.WriteUInt8(kResult_Error);
+				}
+			} else if (command == kCommand_SetChannelAnimationColor) {
+				stream.SetDataTypeEnabled(true);
+
+				uint8_t channelIndex = 0;
+				if (!stream.ReadUInt8(channelIndex))
+					return;
+
+				uint8_t index = 0;
+				if (!stream.ReadUInt8(index))
+					return;
+
+				uint8_t r = 0;
+				if (!stream.ReadUInt8(r))
+					return;
+
+				uint8_t g = 0;
+				if (!stream.ReadUInt8(g))
+					return;
+
+				uint8_t b = 0;
+				if (!stream.ReadUInt8(b))
+					return;
+
+				if (channelIndex < CHANNEL_COUNT && index < CHANNEL_MAX_SIZE) {
+					g_animationCore.SetChannelAnimationColor(channelIndex, index, { r, g, b });
 					stream.WriteUInt8(kResult_Ok);
 				} else {
 					stream.WriteUInt8(kResult_Error);
@@ -371,74 +449,7 @@ void handleStream(TypedStream &stream) {
 				}
 
 				// Set channel animation data and handle stream
-				stream.Write(kCommand_SetChannelAnimationData);
 				if (channelIndex < CHANNEL_COUNT && animation != 0 && animation->HandleStream(channelIndex, stream)) {
-					stream.WriteUInt8(kResult_Ok);
-				} else {
-					stream.WriteUInt8(kResult_Error);
-				}
-			} else if (command == kCommand_SetChannelSpeed) {
-				stream.SetDataTypeEnabled(true);
-
-				uint8_t channelIndex = 0;
-				if (!stream.ReadUInt8(channelIndex))
-					return;
-
-				float speed = 0;
-				if (!stream.ReadFloat(speed))
-					return;
-
-				stream.Write(kCommand_SetChannelSpeed);
-				if (channelIndex < CHANNEL_COUNT && speed >= ANIMATION_MIN_SPEED && speed <= ANIMATION_MAX_SPEED) {
-					g_animationCore.SetChannelSpeed(channelIndex, speed);
-					stream.WriteUInt8(kResult_Ok);
-				} else {
-					stream.WriteUInt8(kResult_Error);
-				}
-			} else if (command == kCommand_SetChannelColorCount) {
-				stream.SetDataTypeEnabled(true);
-
-				uint8_t channelIndex = 0;
-				if (!stream.ReadUInt8(channelIndex))
-					return;
-
-				uint8_t count = 0;
-				if (!stream.ReadUInt8(count))
-					return;
-
-				stream.Write(kCommand_SetChannelColorCount);
-				if (channelIndex < CHANNEL_COUNT && count <= ANIMATION_MAX_COLORS) {
-					g_animationCore.SetChannelColorCount(channelIndex, count);
-					stream.WriteUInt8(kResult_Ok);
-				} else {
-					stream.WriteUInt8(kResult_Error);
-				}
-			} else if (command == kCommand_SetChannelColor) {
-				stream.SetDataTypeEnabled(true);
-
-				uint8_t channelIndex = 0;
-				if (!stream.ReadUInt8(channelIndex))
-					return;
-
-				uint8_t index = 0;
-				if (!stream.ReadUInt8(index))
-					return;
-
-				uint8_t r = 0;
-				if (!stream.ReadUInt8(r))
-					return;
-
-				uint8_t g = 0;
-				if (!stream.ReadUInt8(g))
-					return;
-
-				uint8_t b = 0;
-				if (!stream.ReadUInt8(b))
-					return;
-
-				stream.Write(kCommand_SetChannelColor);
-				if (channelIndex < CHANNEL_COUNT && index < CHANNEL_MAX_SIZE) {
-					g_animationCore.SetChannelColor(channelIndex, index, { r, g, b });
 					stream.WriteUInt8(kResult_Ok);
 				} else {
 					stream.WriteUInt8(kResult_Error);
@@ -464,7 +475,6 @@ void handleStream(TypedStream &stream) {
 				delay(BLUETOOTH_SERIAL_AT_DELAY);
 
 				// Send response to device
-				stream.Write(kCommand_Bluetooth_GetPassword);
 				if (readSize > 0) {
 					char password[4]{ 0 };
 					ATCommand::GetParameter(buffer, readSize, password, sizeof(password));
@@ -498,7 +508,6 @@ void handleStream(TypedStream &stream) {
 				delay(BLUETOOTH_SERIAL_AT_DELAY);
 
 				// Send response to device
-				stream.Write(kCommand_Bluetooth_SetPassword);
 				if (readSize > 0) {
 					bool resultOk = strstr(buffer, "OK") != 0;
 					stream.WriteUInt8(resultOk ? kResult_Ok : kResult_Error);
@@ -525,7 +534,6 @@ void handleStream(TypedStream &stream) {
 				delay(BLUETOOTH_SERIAL_AT_DELAY);
 
 				// Send response to device
-				stream.Write(kCommand_Bluetooth_UnpairAll);
 				stream.SetDataTypeEnabled(true);
 				if (unpairReadSize > 0 && disconnectReadSize > 0) {
 					stream.WriteUInt8(kResult_Ok);
@@ -549,7 +557,6 @@ void handleStream(TypedStream &stream) {
 				delay(BLUETOOTH_SERIAL_AT_DELAY);
 
 				// Send response to device
-				stream.Write(kCommand_Bluetooth_GetStatus);
 				stream.SetDataTypeEnabled(true);
 				if (readSize > 0) {
 					char state[12]{ 0 };
@@ -600,7 +607,6 @@ void handleStream(TypedStream &stream) {
 				delay(BLUETOOTH_SERIAL_AT_DELAY);
 
 				// Send response to device
-				stream.Write(kCommand_Bluetooth_GetConnectionInfo);
 				stream.SetDataTypeEnabled(true);
 				if (stateReadSize > 0 && addressReadSize > 0) {
 					stream.WriteUInt8(kResult_Ok);

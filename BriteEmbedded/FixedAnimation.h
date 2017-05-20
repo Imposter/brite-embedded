@@ -3,12 +3,7 @@
 #include "Config.h"
 #include "Animation.h"
 
-class BreatheAnimation : public Animation {
-	static const float AlphaUpdateRate;
-
-	bool m_increasing[CHANNEL_COUNT]{ true };
-	float m_alpha[CHANNEL_COUNT]{ 0.0f };
-
+class FixedAnimation : public Animation {
 protected:
 	virtual const char *onIdRequested() override;
 	virtual void onAnimate(uint8_t channelIndex) override;

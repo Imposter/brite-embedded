@@ -16,7 +16,7 @@ int16_t TypedStream::Read() {
 int16_t TypedStream::Read(char *buffer, uint16_t size) {
 	uint32_t initialTime = millis();
 	uint32_t currentTime = initialTime;
-	uint32_t deltaTime = 0;
+	uint64_t deltaTime = 0;
 
 	uint16_t origSize = size;
 
@@ -35,13 +35,12 @@ int16_t TypedStream::Read(char *buffer, uint16_t size) {
 			deltaTime = currentTime - initialTime;
 	} while (deltaTime < m_timeout && size != 0);
 
-	if (size == 0) {
+	if (size == 0)
 		return origSize;
-	} else if (size > 0 && size != origSize) {
+	else if (size > 0 && size != origSize)
 		return origSize - size;
-	} else {
+	else
 		return -1;
-	}
 }
 
 int16_t TypedStream::Write(const char *buffer, uint16_t size) {
@@ -58,7 +57,7 @@ bool TypedStream::readDataType(DataType type) {
 
 	uint32_t initialTime = millis();
 	uint32_t currentTime = initialTime;
-	uint32_t deltaTime = 0;
+	uint64_t deltaTime = 0;
 
 	do {
 		if (m_stream->available() > 0) {

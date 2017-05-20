@@ -1,6 +1,7 @@
 #include "BreatheAnimation.h"
+#include "AnimationCore.h"
 
-const float BreatheAnimation::AlphaUpdateRate = 0.01f;
+const float BreatheAnimation::AlphaUpdateRate = 0.025f;
 
 const char *BreatheAnimation::onIdRequested() {
 	return "Breathe";
@@ -10,9 +11,9 @@ void BreatheAnimation::onAnimate(uint8_t channelIndex) {
 	// Get data
 	AnimationCore *core = getCore();
 	Channel *channel = core->GetChannel(channelIndex);
-	uint8_t colors = core->GetChannelColorCount(channelIndex);
-	uint8_t currentColorIndex = core->GetChannelCurrentColor(channelIndex);
-	Color currentColor = core->GetChannelColor(channelIndex, currentColorIndex);
+	uint8_t colors = core->GetChannelAnimationColorCount(channelIndex);
+	uint8_t currentColorIndex = core->GetChannelAnimationCurrentColor(channelIndex);
+	Color currentColor = core->GetChannelAnimationColor(channelIndex, currentColorIndex);
 
 	uint16_t ledCount = channel->GetLedCount();
 	
@@ -47,7 +48,7 @@ void BreatheAnimation::onAnimate(uint8_t channelIndex) {
 			currentColorIndex = 0;
 		}
 
-		core->SetChannelCurrentColor(channelIndex, currentColorIndex);
+		core->SetChannelAnimationCurrentColor(channelIndex, currentColorIndex);
 	}
 }
 

@@ -29,9 +29,9 @@ int16_t ATCommand::Execute(TypedStream &stream, const char *type, const char *co
 	// Ignore response
 	char c = 0;
 	int16_t response = 0;
-	while (stream.Read(&c, sizeof(c)) > 0) {
+	while (stream.Read(&c, sizeof(c)) > 0)
 		response++;
-	}
+	
 	return response;
 }
 
@@ -120,9 +120,9 @@ int16_t ATCommand::Write(TypedStream &stream, const char *type, const char *comm
 	// Ignore response
 	char c = 0;
 	int16_t response = 0;
-	while (stream.Read(&c, sizeof(c)) > 0) {
+	while (stream.Read(&c, sizeof(c)) > 0)
 		response++;
-	}
+	
 	return response;
 }
 
@@ -142,14 +142,12 @@ int16_t ATCommand::GetParameter(const char *buffer, uint32_t bufferSize, char *p
 int16_t ATCommand::GetParameter(const char *buffer, uint32_t bufferSize, uint8_t parameter, char *parameterBuffer, uint16_t parameterBufferSize) {
 	const char *paramStart = strstr(buffer, "=");
 	if (paramStart != nullptr) {
-		for (uint8_t i = 0; i < parameter; i++) {
+		for (uint8_t i = 0; i < parameter; i++)
 			paramStart = strstr(paramStart, ",");
-		}
 
 		const char *paramEnd = strstr(++paramStart, ",");
-		if (paramEnd == nullptr) {
+		if (paramEnd == nullptr)
 			paramEnd = strstr(paramStart, "\r\n");
-		}
 
 		int16_t toCopy = min(paramEnd - paramStart, parameterBufferSize);
 		strncpy(parameterBuffer, paramStart, toCopy);

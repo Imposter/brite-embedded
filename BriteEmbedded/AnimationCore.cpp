@@ -70,46 +70,44 @@ void AnimationCore::SetChannelAnimationEnabled(uint8_t channelIndex, bool enable
 	m_animationEnabled[channelIndex] = enabled;
 
 	Channel &channel = m_channels[channelIndex];
-	if (!enabled) {
+	if (!enabled)
 		channel.Clear();
-	}
 
 	Animation *animation = m_animations[channelIndex];
-	if (animation != 0) {
+	if (animation != 0)
 		animation->SetEnabled(channelIndex, enabled);
-	}
 }
 
-const uint8_t &AnimationCore::GetChannelColorCount(uint8_t channel) const {
-	return m_colorCount[channel];
-}
-
-void AnimationCore::SetChannelColorCount(uint8_t channel, uint8_t colorCount) {
-	m_colorCount[channel] = colorCount;
-}
-
-const Color &AnimationCore::GetChannelColor(uint8_t channel, uint8_t color) const {
-	return m_colors[channel][color];
-}
-
-void AnimationCore::SetChannelColor(uint8_t channel, uint8_t color, Color colorValue) {
-	m_colors[channel][color] = colorValue;
-}
-
-const uint8_t &AnimationCore::GetChannelCurrentColor(uint8_t channel) const {
-	return m_currentColor[channel];
-}
-
-void AnimationCore::SetChannelCurrentColor(uint8_t channel, uint8_t color) {
-	m_currentColor[channel] = color;
-}
-
-const float &AnimationCore::GetChannelSpeed(uint8_t channel) const {
+const float &AnimationCore::GetChannelAnimationSpeed(uint8_t channel) const {
 	return m_speeds[channel];
 }
 
-void AnimationCore::SetChannelSpeed(uint8_t channel, float speed) {
+void AnimationCore::SetChannelAnimationSpeed(uint8_t channel, float speed) {
 	m_speeds[channel] = speed;
+}
+
+const uint8_t &AnimationCore::GetChannelAnimationColorCount(uint8_t channel) const {
+	return m_colorCount[channel];
+}
+
+void AnimationCore::SetChannelAnimationColorCount(uint8_t channel, uint8_t colorCount) {
+	m_colorCount[channel] = colorCount;
+}
+
+const Color &AnimationCore::GetChannelAnimationColor(uint8_t channel, uint8_t color) const {
+	return m_colors[channel][color];
+}
+
+void AnimationCore::SetChannelAnimationColor(uint8_t channel, uint8_t color, Color colorValue) {
+	m_colors[channel][color] = colorValue;
+}
+
+const uint8_t &AnimationCore::GetChannelAnimationCurrentColor(uint8_t channel) const {
+	return m_currentColor[channel];
+}
+
+void AnimationCore::SetChannelAnimationCurrentColor(uint8_t channel, uint8_t color) {
+	m_currentColor[channel] = color;
 }
 
 const uint32_t &AnimationCore::GetChannelLastAnimation(uint8_t channel) const {
