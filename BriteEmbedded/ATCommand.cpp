@@ -1,4 +1,5 @@
 #include "ATCommand.h"
+#include <stdarg.h>
 
 #ifndef min
 #define min(a, b) a < b ? a : b
@@ -29,7 +30,7 @@ int16_t ATCommand::Execute(TypedStream &stream, const char *type, const char *co
 	// Ignore response
 	char c = 0;
 	int16_t response = 0;
-	while (stream.Read(&c, sizeof(c)) > 0)
+	while (stream.Read(&c, sizeof c) > 0)
 		response++;
 	
 	return response;
@@ -120,7 +121,7 @@ int16_t ATCommand::Write(TypedStream &stream, const char *type, const char *comm
 	// Ignore response
 	char c = 0;
 	int16_t response = 0;
-	while (stream.Read(&c, sizeof(c)) > 0)
+	while (stream.Read(&c, sizeof c) > 0)
 		response++;
 	
 	return response;

@@ -46,7 +46,7 @@ public:
 	*
 	* \return Read byte
 	**/
-	int16_t Peek();
+	int16_t Peek() const;
 
 	/**
 	* Read
@@ -55,7 +55,7 @@ public:
 	*
 	* \return Read byte
 	**/
-	int16_t Read();
+	int16_t Read() const;
 
 	/**
 	* Read
@@ -66,7 +66,7 @@ public:
 	* \param size Amount of bytes to read
 	* \return Bytes read
 	**/
-	int16_t Read(char *buffer, uint16_t size);
+	int16_t Read(char *buffer, uint16_t size) const;
 
 	/**
 	* Write
@@ -77,7 +77,7 @@ public:
 	* \param size Amount of bytes to write
 	* \return Bytes written
 	**/
-	int16_t Write(const char *buffer, uint16_t size);
+	int16_t Write(const char *buffer, uint16_t size) const;
 
 	/**
 	* Write
@@ -87,7 +87,7 @@ public:
 	* \param string String to write
 	* \return Bytes written
 	**/
-	int16_t Write(const char *string);
+	int16_t Write(const char *string) const;
 
 	/**
 	* Read
@@ -131,7 +131,7 @@ private:
 	* \param type Data type to compare
 	* \return Data type matches or not
 	**/
-	bool readDataType(DataType type);
+	bool readDataType(DataType type) const;
 
 	/**
 	* writeDataType
@@ -173,7 +173,7 @@ public:
 	* 
 	* \return Bytes available to read
 	**/
-	uint16_t Available();
+	uint16_t Available() const;
 
 	/**
 	* IsDataTypeEnabled

@@ -9,7 +9,6 @@ void FixedAnimation::onAnimate(uint8_t channelIndex) {
 	// Get data
 	AnimationCore *core = getCore();
 	Channel *channel = core->GetChannel(channelIndex);
-	uint8_t colors = core->GetChannelAnimationColorCount(channelIndex);
 	uint16_t ledCount = channel->GetLedCount();
 
 	uint8_t currentColorIndex = core->GetChannelAnimationCurrentColor(channelIndex);

@@ -5,18 +5,17 @@
 
 const uint16_t TypedStream::DefaultReadTimeout = 100; // ms
 
-int16_t TypedStream::Peek() {
+int16_t TypedStream::Peek() const {
 	return m_stream->peek();
 }
 
-int16_t TypedStream::Read() {
+int16_t TypedStream::Read() const {
 	return m_stream->read();
 }
 
-int16_t TypedStream::Read(char *buffer, uint16_t size) {
+int16_t TypedStream::Read(char *buffer, uint16_t size) const {
 	uint32_t initialTime = millis();
-	uint32_t currentTime = initialTime;
-	uint64_t deltaTime = 0;
+	uint64_t deltaTime;
 
 	uint16_t origSize = size;
 
@@ -24,11 +23,11 @@ int16_t TypedStream::Read(char *buffer, uint16_t size) {
 		// Read data
 		int16_t b = Read();
 		if (b != -1) {
-			*(char *)(buffer++) = b;
+			*(char *)buffer++ = b;
 			size--;
 		}
 
-		currentTime = millis();
+		uint32_t currentTime = millis();
 		if (currentTime < initialTime)
 			deltaTime = ULONG_MAX - initialTime + currentTime;
 		else
@@ -37,27 +36,25 @@ int16_t TypedStream::Read(char *buffer, uint16_t size) {
 
 	if (size == 0)
 		return origSize;
-	else if (size > 0 && size != origSize)
+	if (size > 0 && size != origSize)
 		return origSize - size;
-	else
-		return -1;
+	return -1;
 }
 
-int16_t TypedStream::Write(const char *buffer, uint16_t size) {
+int16_t TypedStream::Write(const char *buffer, uint16_t size) const {
 	return m_stream->write(buffer, size);
 }
 
-int16_t TypedStream::Write(const char *string) {
+int16_t TypedStream::Write(const char *string) const {
 	return Write(string, strlen(string));
 }
 
-bool TypedStream::readDataType(DataType type) {
+bool TypedStream::readDataType(DataType type) const {
 	if (!m_typesEnabled)
 		return true;
 
 	uint32_t initialTime = millis();
-	uint32_t currentTime = initialTime;
-	uint64_t deltaTime = 0;
+	uint64_t deltaTime;
 
 	do {
 		if (m_stream->available() > 0) {
@@ -69,7 +66,7 @@ bool TypedStream::readDataType(DataType type) {
 			return b == type;
 		}
 
-		currentTime = millis();
+		uint32_t currentTime = millis();
 		if (currentTime < initialTime)
 			deltaTime = ULONG_MAX - initialTime + currentTime;
 		else
@@ -91,7 +88,7 @@ Stream &TypedStream::GetStream() const {
 	return *m_stream;
 }
 
-uint16_t TypedStream::Available() {
+uint16_t TypedStream::Available() const {
 	return m_stream->available();
 }
 

@@ -1,5 +1,6 @@
 #include "Animation.h"
 #include "Hash.h"
+#include <string.h>
 
 AnimationCore *Animation::getCore() const {
 	return m_core;

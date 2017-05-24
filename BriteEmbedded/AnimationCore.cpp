@@ -1,4 +1,5 @@
 #include "AnimationCore.h"
+#include <limits.h>
 
 AnimationCore::AnimationCore(Channel *channels)
 	: m_channels(channels) {}

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "TypedStream.h"
-#include <stdarg.h>
 
 class ATCommand {
 public:

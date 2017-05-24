@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Config.h"
 #include "Color.h"
 #include <Adafruit_NeoPixel.h>
 

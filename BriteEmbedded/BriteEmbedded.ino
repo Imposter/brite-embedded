@@ -74,6 +74,11 @@ BreatheAnimation g_anim1;
 PulseAnimation g_anim2;
 FadeAnimation g_anim3;
 
+// Forward declarations
+#if defined(USE_SERIAL) || defined(USE_BLUETOOTH_SERIAL)
+void handleStream(TypedStream &stream);
+#endif
+
 void setup() {
 	// Set up state pin for output
 	pinMode(STATE_LED_PIN, OUTPUT);
@@ -202,7 +207,7 @@ void handleStream(TypedStream &stream) {
 				uint16_t checkSum = 0;
 				EEPROM.get<uint16_t>(EEPROM_ID_LOCATION, checkSum);
 				uint32_t id = 0;
-				EEPROM.get<uint32_t>(EEPROM_ID_LOCATION + sizeof(checkSum), id);
+				EEPROM.get<uint32_t>(EEPROM_ID_LOCATION + sizeof checkSum, id);
 
 				stream.SetDataTypeEnabled(true);
 				if (checkSum == EEPROM_ID_CHECKSUM) {

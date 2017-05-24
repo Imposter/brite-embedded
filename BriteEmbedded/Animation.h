@@ -1,15 +1,14 @@
 #pragma once
 
 #include "TypedStream.h"
-#include <string.h>
-#include <limits.h>
 
 class AnimationCore;
 
 class Animation {
-	AnimationCore *m_core;
+	AnimationCore *m_core{ 0 };
 
 protected:
+	~Animation() = default;
 	AnimationCore *getCore() const;
 
 	virtual const char *onIdRequested() = 0;
