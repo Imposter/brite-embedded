@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Windows.Forms;
 using System.IO;
 using System.IO.Ports;
-using System.Threading;
 using System.Text;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace BritePacketBuilder
 {
@@ -30,7 +30,7 @@ namespace BritePacketBuilder
 
         private void btnOpenFolder_Click(object sender, EventArgs e)
         {
-            FolderBrowserDialog dialog = new FolderBrowserDialog()
+            FolderBrowserDialog dialog = new FolderBrowserDialog
             {
                 RootFolder = Environment.SpecialFolder.MyComputer,
                 Description = "Browse Folder"
@@ -71,7 +71,7 @@ namespace BritePacketBuilder
                 return;
             }
 
-            SaveFileDialog dialog = new SaveFileDialog()
+            SaveFileDialog dialog = new SaveFileDialog
             {
                 Filter = "Brite Files (*.brite)|*.brite",
                 InitialDirectory = currentPath
@@ -136,7 +136,7 @@ namespace BritePacketBuilder
             }
             catch (Exception ex)
             {
-                txtLog.AppendText("ERROR: " + ex.ToString() + "\r\n");
+                txtLog.AppendText("ERROR: " + ex + "\r\n");
             }
         }
 
@@ -204,7 +204,7 @@ namespace BritePacketBuilder
                                     txtRemoteData.AppendText("\r\n\r\nString: ");
 
                                     foreach (byte b in bytes)
-                                        txtRemoteData.AppendText(Encoding.ASCII.GetString(new byte[] { b }));
+                                        txtRemoteData.AppendText(Encoding.ASCII.GetString(new[] { b }));
                                 }
                                 else
                                 {
@@ -219,7 +219,7 @@ namespace BritePacketBuilder
                 }
                 catch (Exception ex)
                 {
-                    txtLog.AppendText("ERROR: " + ex.ToString() + "\r\n");
+                    txtLog.AppendText("ERROR: " + ex + "\r\n");
                 }
             }
         }

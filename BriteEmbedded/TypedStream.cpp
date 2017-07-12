@@ -15,7 +15,7 @@ int16_t TypedStream::Read() const {
 
 int16_t TypedStream::Read(char *buffer, uint16_t size) const {
 	uint32_t initialTime = millis();
-	uint64_t deltaTime;
+	uint32_t deltaTime;
 
 	uint16_t origSize = size;
 
@@ -23,7 +23,7 @@ int16_t TypedStream::Read(char *buffer, uint16_t size) const {
 		// Read data
 		int16_t b = Read();
 		if (b != -1) {
-			*(char *)buffer++ = b;
+			*static_cast<char *>(buffer++) = b;
 			size--;
 		}
 
@@ -54,7 +54,7 @@ bool TypedStream::readDataType(DataType type) const {
 		return true;
 
 	uint32_t initialTime = millis();
-	uint64_t deltaTime;
+	uint32_t deltaTime;
 
 	do {
 		if (m_stream->available() > 0) {
@@ -203,7 +203,7 @@ bool TypedStream::ReadBlob(uint8_t *obj, uint32_t size) {
 		return false;
 
 	uint32_t toRead = min(size, length);
-	if (!Read((char *)obj, toRead))
+	if (!Read(reinterpret_cast<char *>(obj), toRead))
 		return false;
 
 	// Read out the rest of the blob to ensure that stream synchronization
@@ -267,5 +267,5 @@ void TypedStream::WriteString(const char *obj, uint32_t size) {
 void TypedStream::WriteBlob(uint8_t *obj, uint32_t size) {
 	writeDataType(kDataType_Blob);
 	Write<uint32_t>(size);
-	Write((const char *)obj, size);
+	Write(reinterpret_cast<const char *>(obj), size);
 }

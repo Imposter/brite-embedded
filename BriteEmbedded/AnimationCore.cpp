@@ -4,7 +4,7 @@
 AnimationCore::AnimationCore(Channel *channels)
 	: m_channels(channels) {}
 
-void AnimationCore::Animate() {
+void AnimationCore::Animate() {	
 	for (uint8_t i = 0; i < CHANNEL_COUNT; i++) {
 		if (m_animationEnabled[i]) {
 			Animation *animation = m_animations[i];
@@ -17,8 +17,8 @@ void AnimationCore::Animate() {
 				else
 					deltaTime = currentTime - lastAnimation;
 
-				if (deltaTime < (uint8_t)(ANIMATION_UPDATE_SPEED * (1.0f - m_speeds[i])))
-					return;
+				if (deltaTime < static_cast<uint8_t>(ANIMATION_UPDATE_SPEED * (1.0f - m_speeds[i])))
+					continue;
 
 				// Animate
 				animation->Animate(i);

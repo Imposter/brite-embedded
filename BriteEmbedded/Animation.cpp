@@ -8,7 +8,7 @@ AnimationCore *Animation::getCore() const {
 
 uint32_t Animation::GetId() {
 	const char *idStr = onIdRequested();
-	return FNV1A32((uint8_t *)idStr, strlen(idStr));
+	return FNV1A32(reinterpret_cast<uint8_t *>(const_cast<char *>(idStr)), strlen(idStr));
 }
 
 void Animation::Initialize(AnimationCore *core) {

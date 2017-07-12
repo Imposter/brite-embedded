@@ -36,7 +36,7 @@ void Channel::SetLedCount(uint16_t ledCount) {
 }
 
 Color Channel::GetLedColor(uint16_t i) const {
-	return ((Color *)m_pixels.getPixels())[i];
+	return reinterpret_cast<Color *>(m_pixels.getPixels())[i];
 }
 
 void Channel::SetLedColor(uint16_t i, uint32_t color) {

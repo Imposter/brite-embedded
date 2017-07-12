@@ -1,11 +1,14 @@
-﻿namespace BritePacketBuilder
+﻿using System.ComponentModel;
+using System.Windows.Forms;
+
+namespace BritePacketBuilder
 {
     partial class MainForm
     {
         /// <summary>
         /// Required designer variable.
         /// </summary>
-        private System.ComponentModel.IContainer components = null;
+        private IContainer components = null;
 
         /// <summary>
         /// Clean up any resources being used.
@@ -397,32 +400,32 @@
 
         #endregion
 
-        private System.Windows.Forms.StatusStrip stsMain;
-        private System.Windows.Forms.ToolStripStatusLabel lblStatus;
-        private System.Windows.Forms.ToolStrip tlsMain;
-        private System.Windows.Forms.ToolStripDropDownButton btnFile;
-        private System.Windows.Forms.ToolStripMenuItem btnNew;
-        private System.Windows.Forms.ToolStripMenuItem btnOpenFolder;
-        private System.Windows.Forms.ToolStripMenuItem btnSave;
-        private System.Windows.Forms.ToolStripMenuItem btnSaveAs;
-        private System.Windows.Forms.ToolStripMenuItem btnExit;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripComboBox cmbPorts;
-        private System.Windows.Forms.ToolStripButton btnConnect;
-        private System.Windows.Forms.SplitContainer splMain;
-        private System.Windows.Forms.TextBox txtLog;
-        private System.Windows.Forms.SplitContainer splPackets;
-        private System.Windows.Forms.SplitContainer splPacket;
-        private System.Windows.Forms.GroupBox grpPacketFiles;
-        private System.Windows.Forms.TreeView tvFiles;
-        private System.Windows.Forms.GroupBox grpRemoteData;
-        private System.Windows.Forms.GroupBox grpPacketBuild;
-        private System.Windows.Forms.TextBox txtRemoteData;
-        private System.Windows.Forms.TextBox txtPacket;
-        private System.Windows.Forms.Button btnSend;
-        private System.Windows.Forms.ToolStripLabel lblPort;
-        private System.Windows.Forms.ToolStripLabel lblBaudRate;
-        private System.Windows.Forms.ToolStripComboBox cmbBaudRates;
+        private StatusStrip stsMain;
+        private ToolStripStatusLabel lblStatus;
+        private ToolStrip tlsMain;
+        private ToolStripDropDownButton btnFile;
+        private ToolStripMenuItem btnNew;
+        private ToolStripMenuItem btnOpenFolder;
+        private ToolStripMenuItem btnSave;
+        private ToolStripMenuItem btnSaveAs;
+        private ToolStripMenuItem btnExit;
+        private ToolStripSeparator toolStripSeparator1;
+        private ToolStripComboBox cmbPorts;
+        private ToolStripButton btnConnect;
+        private SplitContainer splMain;
+        private TextBox txtLog;
+        private SplitContainer splPackets;
+        private SplitContainer splPacket;
+        private GroupBox grpPacketFiles;
+        private TreeView tvFiles;
+        private GroupBox grpRemoteData;
+        private GroupBox grpPacketBuild;
+        private TextBox txtRemoteData;
+        private TextBox txtPacket;
+        private Button btnSend;
+        private ToolStripLabel lblPort;
+        private ToolStripLabel lblBaudRate;
+        private ToolStripComboBox cmbBaudRates;
     }
 }
 

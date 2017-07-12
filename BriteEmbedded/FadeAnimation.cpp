@@ -26,9 +26,9 @@ void FadeAnimation::onAnimate(uint8_t channelIndex) {
 	float &amount = m_amount[channelIndex];
 
 	// Blend colors
-	uint8_t r = (uint8_t)(currentColor.Red * (1.0f - amount) + nextColor.Red * amount);
-	uint8_t g = (uint8_t)(currentColor.Green * (1.0f - amount) + nextColor.Green * amount);
-	uint8_t b = (uint8_t)(currentColor.Blue * (1.0f - amount) + nextColor.Blue * amount);
+	uint8_t r = static_cast<uint8_t>(currentColor.Red * (1.0f - amount) + nextColor.Red * amount);
+	uint8_t g = static_cast<uint8_t>(currentColor.Green * (1.0f - amount) + nextColor.Green * amount);
+	uint8_t b = static_cast<uint8_t>(currentColor.Blue * (1.0f - amount) + nextColor.Blue * amount);
 	
 	// Update lights
 	for (uint16_t i = 0; i < ledCount; i++)
