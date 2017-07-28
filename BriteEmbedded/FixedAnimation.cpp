@@ -12,7 +12,7 @@ void FixedAnimation::onAnimate(uint8_t channelIndex) {
 	uint16_t ledCount = channel->GetLedCount();
 
 	uint8_t currentColorIndex = core->GetChannelAnimationCurrentColor(channelIndex);
-	Color currentColor = core->GetChannelAnimationColor(channelIndex, currentColorIndex);
+	const Color &currentColor = core->GetChannelAnimationColor(channelIndex, currentColorIndex);
 
 	// Update lights
 	for (uint16_t i = 0; i < ledCount; i++)
@@ -28,6 +28,6 @@ void FixedAnimation::onDisabled(uint8_t channelIndex) {
 
 }
 
-bool FixedAnimation::onDataReceived(uint8_t channelIndex, TypedStream &stream) {
-	return true;
+void FixedAnimation::onRequestReceived(uint8_t channelIndex, TypedStream &stream) {
+	
 }

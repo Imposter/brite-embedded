@@ -94,7 +94,10 @@
     <ClInclude Include="FixedAnimation.h" />
     <ClInclude Include="Hash.h" />
     <ClInclude Include="BreatheAnimation.h" />
+    <ClInclude Include="ManualAnimation.h" />
+    <ClInclude Include="MarqueeAnimation.h" />
     <ClInclude Include="PulseAnimation.h" />
+    <ClInclude Include="SpiralAnimation.h" />
     <ClInclude Include="TypedStream.h" />
     <ClInclude Include="__vm\.BriteEmbedded.vsarduino.h" />
   </ItemGroup>
@@ -107,7 +110,10 @@
     <ClCompile Include="FixedAnimation.cpp" />
     <ClCompile Include="Hash.cpp" />
     <ClCompile Include="BreatheAnimation.cpp" />
+    <ClCompile Include="ManualAnimation.cpp" />
+    <ClCompile Include="MarqueeAnimation.cpp" />
     <ClCompile Include="PulseAnimation.cpp" />
+    <ClCompile Include="SpiralAnimation.cpp" />
     <ClCompile Include="TypedStream.cpp" />
   </ItemGroup>
   <PropertyGroup>

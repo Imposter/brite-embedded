@@ -9,10 +9,13 @@
 #endif
 
 // Animations
+#include "ManualAnimation.h"
 #include "FixedAnimation.h"
 #include "BreatheAnimation.h"
 #include "PulseAnimation.h"
 #include "FadeAnimation.h"
+#include "SpiralAnimation.h"
+#include "MarqueeAnimation.h"
 
 #ifdef USE_SERIAL
 TypedStream g_serialStream(&Serial, SERIAL_TIMEOUT);
@@ -29,7 +32,7 @@ enum Command : uint8_t {
 	kCommand_GetID,
 	kCommand_SetID,
 	kCommand_Reset,
-	kCommand_GetCapabilities,
+	kCommand_GetParameters,
 	kCommand_GetAnimations,
 
 	kCommand_SetChannelBrightness,
@@ -39,7 +42,7 @@ enum Command : uint8_t {
 	kCommand_SetChannelAnimationSpeed,
 	kCommand_SetChannelAnimationColorCount,
 	kCommand_SetChannelAnimationColor,
-	kCommand_SetChannelAnimationData,
+	kCommand_SendChannelAnimationRequest,
 
 	kCommand_Max,
 
@@ -69,12 +72,18 @@ Animation *g_animations[ANIMATION_MAX_COUNT]{ 0 };
 AnimationCore g_animationCore(g_channels);
 
 // Animations
-FixedAnimation g_anim0;
-BreatheAnimation g_anim1;
-PulseAnimation g_anim2;
-FadeAnimation g_anim3;
+ManualAnimation g_anim0;
+FixedAnimation g_anim1;
+BreatheAnimation g_anim2;
+PulseAnimation g_anim3;
+FadeAnimation g_anim4;
+SpiralAnimation g_anim5;
+MarqueeAnimation g_anim6;
 
 // Forward declarations
+#ifdef USE_BLUETOOTH_SERIAL
+void initializeBluetooth();
+#endif
 #if defined(USE_SERIAL) || defined(USE_BLUETOOTH_SERIAL)
 void handleStream(TypedStream &stream);
 #endif
@@ -113,6 +122,9 @@ void setup() {
 	g_animations[1] = &g_anim1;
 	g_animations[2] = &g_anim2;
 	g_animations[3] = &g_anim3;
+	g_animations[4] = &g_anim4;
+	g_animations[5] = &g_anim5;
+	g_animations[6] = &g_anim6;
 
 	for (uint8_t i = 0; i < ANIMATION_MAX_COUNT; i++) {
 		Animation *animation = g_animations[i];
@@ -162,10 +174,10 @@ void initializeBluetooth() {
 	uint32_t id = 0;
 	EEPROM.get<uint32_t>(EEPROM_ID_LOCATION + sizeof(checkSum), id);
 
-	uint32_t hash = FNV1A32((uint8_t *)id, sizeof(id));
+	uint32_t hash = FNV1A32(reinterpret_cast<uint8_t *>(id), sizeof(id));
 	char name[3 + sizeof(id) * 2 + 1] = "BC-";
 	if (checkSum == EEPROM_ID_CHECKSUM) {
-		snprintf(name + 3, sizeof(name) - 3, "%08X", id);
+		snprintf(name + 3, sizeof(name) - 3, "%08lX", hash);
 	} else {
 		strcpy(name, "BC-NULL");
 	}
@@ -229,7 +241,7 @@ void handleStream(TypedStream &stream) {
 				stream.SetDataTypeEnabled(true);
 				if (checkSum != EEPROM_ID_CHECKSUM) {
 					// Set ID
-					EEPROM.put<uint16_t>(EEPROM_ID_LOCATION, (uint16_t)EEPROM_ID_CHECKSUM);
+					EEPROM.put<uint16_t>(EEPROM_ID_LOCATION, static_cast<uint16_t>(EEPROM_ID_CHECKSUM));
 					EEPROM.put<uint32_t>(EEPROM_ID_LOCATION + sizeof(uint16_t), id);
 					stream.WriteUInt8(kResult_Ok);
 				} else {
@@ -257,7 +269,7 @@ void handleStream(TypedStream &stream) {
 
 				stream.SetDataTypeEnabled(true);
 				stream.WriteUInt8(kResult_Ok);
-			} else if (command == kCommand_GetCapabilities) {
+			} else if (command == kCommand_GetParameters) {
 				stream.SetDataTypeEnabled(true);
 #ifdef USE_BLUETOOTH_SERIAL
 				stream.WriteBoolean(true);
@@ -313,6 +325,12 @@ void handleStream(TypedStream &stream) {
 				if (channelIndex < CHANNEL_COUNT && ledCount >= 0 && ledCount < CHANNEL_MAX_SIZE) {
 					Channel &channel = g_channels[channelIndex];
 					channel.SetLedCount(ledCount);
+
+					// Reset animations
+					g_animationCore.SetChannelAnimationEnabled(channelIndex, false);
+
+					// Reset channel
+					g_animationCore.ResetChannel(channelIndex);
 					
 					stream.WriteUInt8(kResult_Ok);
 				} else {
@@ -436,7 +454,7 @@ void handleStream(TypedStream &stream) {
 				} else {
 					stream.WriteUInt8(kResult_Error);
 				}
-			} else if (command == kCommand_SetChannelAnimationData) {
+			} else if (command == kCommand_SendChannelAnimationRequest) {
 				stream.SetDataTypeEnabled(true);
 
 				uint8_t channelIndex = 0;
@@ -460,9 +478,14 @@ void handleStream(TypedStream &stream) {
 				}
 
 				// Set channel animation data and handle stream
-				if (channelIndex < CHANNEL_COUNT && animation != 0 && animation->HandleStream(channelIndex, stream)) {
+				if (channelIndex < CHANNEL_COUNT && animation != 0) {
+					stream.SetDataTypeEnabled(true);
 					stream.WriteUInt8(kResult_Ok);
+
+					stream.SetDataTypeEnabled(false);
+					animation->HandleRequest(channelIndex, stream);
 				} else {
+					stream.SetDataTypeEnabled(true);
 					stream.WriteUInt8(kResult_Error);
 				}
 			}

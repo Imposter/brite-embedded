@@ -15,7 +15,7 @@ void PulseAnimation::onAnimate(uint8_t channelIndex) {
 	uint16_t ledCount = channel->GetLedCount();
 
 	uint8_t currentColorIndex = core->GetChannelAnimationCurrentColor(channelIndex);
-	Color currentColor = core->GetChannelAnimationColor(channelIndex, currentColorIndex);
+	const Color &currentColor = core->GetChannelAnimationColor(channelIndex, currentColorIndex);
 
 	float &alpha = m_alpha[channelIndex];
 
@@ -51,6 +51,6 @@ void PulseAnimation::onDisabled(uint8_t channelIndex) {
 
 }
 
-bool PulseAnimation::onDataReceived(uint8_t channelIndex, TypedStream &stream) {
-	return true;
+void PulseAnimation::onRequestReceived(uint8_t channelIndex, TypedStream &stream) {
+	
 }

@@ -101,7 +101,7 @@ public:
 	**/
 	template<typename TData>
 	bool Read(TData &obj) {
-		return Read((char *)&obj, sizeof(TData)) == sizeof(TData);
+		return Read(reinterpret_cast<char *>(&obj), sizeof(TData)) == sizeof(TData);
 	}
 
 	/**
@@ -116,7 +116,7 @@ public:
 	**/
 	template<typename TData>
 	bool Write(const TData &obj) {
-		return Write((const char *)&obj, sizeof(TData)) == sizeof(TData);
+		return Write(reinterpret_cast<const char *>(&obj), sizeof(TData)) == sizeof(TData);
 	}
 
 private:

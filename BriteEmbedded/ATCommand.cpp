@@ -139,7 +139,7 @@ int16_t ATCommand::GetParameter(const char *buffer, uint32_t bufferSize, char *p
 	return -1;
 }
 
-// Untested
+// TODO/NOTE: Untested
 int16_t ATCommand::GetParameter(const char *buffer, uint32_t bufferSize, uint8_t parameter, char *parameterBuffer, uint16_t parameterBufferSize) {
 	const char *paramStart = strstr(buffer, "=");
 	if (paramStart != nullptr) {

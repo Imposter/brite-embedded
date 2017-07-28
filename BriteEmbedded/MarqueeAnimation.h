@@ -3,11 +3,15 @@
 #include "Config.h"
 #include "Animation.h"
 
-class BreatheAnimation : public Animation {
-	static const float AlphaUpdateRate;
+class MarqueeAnimation : public Animation {
+	enum Command : uint8_t {
+		kCommand_SetForwardEnabled,
 
-	bool m_increasing[CHANNEL_COUNT]{ true };
-	float m_alpha[CHANNEL_COUNT]{ 0.0f };
+		kCommand_Max
+	};
+
+	uint16_t m_position[CHANNEL_COUNT]{ 0 };
+	bool m_forward[CHANNEL_COUNT]{ true };
 
 protected:
 	const char *onIdRequested() override;
@@ -17,5 +21,5 @@ protected:
 	void onRequestReceived(uint8_t channelIndex, TypedStream &stream) override;
 
 public:
-	virtual ~BreatheAnimation() = default;
+	virtual ~MarqueeAnimation() = default;
 };

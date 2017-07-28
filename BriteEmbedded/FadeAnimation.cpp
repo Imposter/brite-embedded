@@ -20,8 +20,8 @@ void FadeAnimation::onAnimate(uint8_t channelIndex) {
 		nextColorIndex = 0;
 	}
 
-	Color currentColor = core->GetChannelAnimationColor(channelIndex, currentColorIndex);
-	Color nextColor = core->GetChannelAnimationColor(channelIndex, nextColorIndex);
+	const Color &currentColor = core->GetChannelAnimationColor(channelIndex, currentColorIndex);
+	const Color &nextColor = core->GetChannelAnimationColor(channelIndex, nextColorIndex);
 
 	float &amount = m_amount[channelIndex];
 
@@ -53,6 +53,6 @@ void FadeAnimation::onDisabled(uint8_t channelIndex) {
 
 }
 
-bool FadeAnimation::onDataReceived(uint8_t channelIndex, TypedStream &stream) {
-	return true;
+void FadeAnimation::onRequestReceived(uint8_t channelIndex, TypedStream &stream) {
+	
 }

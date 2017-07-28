@@ -15,7 +15,7 @@ void BreatheAnimation::onAnimate(uint8_t channelIndex) {
 	uint16_t ledCount = channel->GetLedCount();
 
 	uint8_t currentColorIndex = core->GetChannelAnimationCurrentColor(channelIndex);
-	Color currentColor = core->GetChannelAnimationColor(channelIndex, currentColorIndex);
+	const Color &currentColor = core->GetChannelAnimationColor(channelIndex, currentColorIndex);
 	
 	bool &increasing = m_increasing[channelIndex];
 	float &alpha = m_alpha[channelIndex];
@@ -61,6 +61,6 @@ void BreatheAnimation::onDisabled(uint8_t channelIndex) {
 
 }
 
-bool BreatheAnimation::onDataReceived(uint8_t channelIndex, TypedStream &stream) {
-	return true;
+void BreatheAnimation::onRequestReceived(uint8_t channelIndex, TypedStream &stream) {
+	
 }

@@ -13,7 +13,7 @@ protected:
 	void onAnimate(uint8_t channelIndex) override;
 	void onEnabled(uint8_t channelIndex) override;
 	void onDisabled(uint8_t channelIndex) override;
-	bool onDataReceived(uint8_t channelIndex, TypedStream &stream) override;
+	void onRequestReceived(uint8_t channelIndex, TypedStream &stream) override;
 
 public:
 	virtual ~FadeAnimation() = default;

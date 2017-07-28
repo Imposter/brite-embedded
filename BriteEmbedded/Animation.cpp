@@ -27,6 +27,6 @@ void Animation::SetEnabled(uint8_t channel, bool enabled) {
 	}
 }
 
-bool Animation::HandleStream(uint8_t channel, TypedStream &stream) {
-	return onDataReceived(channel, stream);
+void Animation::HandleRequest(uint8_t channel, TypedStream &stream) {
+	onRequestReceived(channel, stream);
 }

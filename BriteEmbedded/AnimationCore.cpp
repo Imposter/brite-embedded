@@ -17,7 +17,7 @@ void AnimationCore::Animate() {
 				else
 					deltaTime = currentTime - lastAnimation;
 
-				if (deltaTime < static_cast<uint8_t>(ANIMATION_UPDATE_SPEED * (1.0f - m_speeds[i])))
+				if (deltaTime < static_cast<uint8_t>(ANIMATION_UPDATE_SPEED * (1.00f - m_speeds[i])))
 					continue;
 
 				// Animate
