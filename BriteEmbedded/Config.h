@@ -1,6 +1,6 @@
 #pragma once
 
-#define FIRMWARE_VERSION 0x00000001
+#define FIRMWARE_VERSION 0xB0000003
 
 // NOTE: This does NOT work correctly on the Arduino Nano so do NOT use it
 // the device will be stuck in an infinite boot loop where you will not be 
@@ -12,24 +12,8 @@
 #define EEPROM_ID_LOCATION 256
 #define EEPROM_ID_CHECKSUM 0xBC1D
 
-#define USE_SERIAL
-#ifdef USE_SERIAL
 #define SERIAL_BAUD_RATE 115200 // bps
 #define SERIAL_TIMEOUT 100 // ms
-#endif
-
-// NOTE: There will be no bluetooth until we have a complete working version 
-// for desktop usage
-//#define USE_BLUETOOTH_SERIAL
-#ifdef USE_BLUETOOTH_SERIAL
-#define BLUETOOTH_SERIAL_KEY_PIN 10
-#define BLUETOOTH_SERIAL_RX_PIN 8
-#define BLUETOOTH_SERIAL_TX_PIN 9
-#define BLUETOOTH_SERIAL_BAUD_RATE 38400 // bps
-#define BLUETOOTH_SERIAL_TIMEOUT 250 // ms
-#define BLUETOOTH_SERIAL_AT_DELAY 50 // ms
-#define BLUETOOTH_SERIAL_BUFFER_SIZE 32
-#endif
 
 #define CHANNEL_START_PIN 2
 #define CHANNEL_COUNT 2
@@ -41,7 +25,3 @@
 #define ANIMATION_MAX_SPEED 1.00f // 0.0-1.0 (Max: 25 FPS)
 #define ANIMATION_UPDATE_SPEED 250
 #define ANIMATION_MAX_COLORS 8
-
-#if !defined(USE_SERIAL) && !defined(USE_BLUETOOTH_SERIAL)
-#error "No serial communication is enabled!"
-#endif

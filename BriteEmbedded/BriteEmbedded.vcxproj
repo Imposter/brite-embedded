@@ -86,7 +86,6 @@
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="AnimationCore.h" />
-    <ClInclude Include="ATCommand.h" />
     <ClInclude Include="Channel.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="Config.h" />
@@ -104,7 +103,6 @@
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="AnimationCore.cpp" />
-    <ClCompile Include="ATCommand.cpp" />
     <ClCompile Include="Channel.cpp" />
     <ClCompile Include="FadeAnimation.cpp" />
     <ClCompile Include="FixedAnimation.cpp" />

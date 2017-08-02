@@ -3,10 +3,6 @@
 #include "Hash.h"
 #include <avr/wdt.h>
 #include <EEPROM.h>
-#ifdef USE_BLUETOOTH_SERIAL
-#include "ATCommand.h"
-#include <AltSoftSerial.h>
-#endif
 
 // Animations
 #include "ManualAnimation.h"
@@ -17,16 +13,8 @@
 #include "SpiralAnimation.h"
 #include "MarqueeAnimation.h"
 
-#ifdef USE_SERIAL
 TypedStream g_serialStream(&Serial, SERIAL_TIMEOUT);
-#endif
 
-#ifdef USE_BLUETOOTH_SERIAL
-AltSoftSerial g_btSerial(BLUETOOTH_SERIAL_RX_PIN, BLUETOOTH_SERIAL_TX_PIN);
-TypedStream g_btSerialStream(&g_btSerial, BLUETOOTH_SERIAL_TIMEOUT);
-#endif
-
-#if defined(USE_SERIAL) || defined(USE_BLUETOOTH_SERIAL)
 enum Command : uint8_t {
 	kCommand_GetVersion = 0,
 	kCommand_GetID,
@@ -45,27 +33,12 @@ enum Command : uint8_t {
 	kCommand_SendChannelAnimationRequest,
 
 	kCommand_Max,
-
-#ifdef USE_BLUETOOTH_SERIAL
-	kCommand_Bluetooth_GetPassword = 50,
-	kCommand_Bluetooth_SetPassword,
-	kCommand_Bluetooth_UnpairAll,
-	kCommand_Bluetooth_GetStatus,
-	kCommand_Bluetooth_GetConnectionInfo,
-
-	kCommand_Bluetooth_Max
-#endif
 };
 
 enum Result : uint8_t {
 	kResult_Ok,
 	kResult_Error,
-
-#ifdef USE_BLUETOOTH_SERIAL
-	kResult_Bluetooth_Unavailable = 50,
-#endif
 };
-#endif
 
 Channel g_channels[CHANNEL_COUNT];
 Animation *g_animations[ANIMATION_MAX_COUNT]{ 0 };
@@ -81,12 +54,7 @@ SpiralAnimation g_anim5;
 MarqueeAnimation g_anim6;
 
 // Forward declarations
-#ifdef USE_BLUETOOTH_SERIAL
-void initializeBluetooth();
-#endif
-#if defined(USE_SERIAL) || defined(USE_BLUETOOTH_SERIAL)
 void handleStream(TypedStream &stream);
-#endif
 
 void setup() {
 	// Set up state pin for output
@@ -100,13 +68,7 @@ void setup() {
 #endif
 
 	// Initialize serial
-#ifdef USE_SERIAL
 	Serial.begin(SERIAL_BAUD_RATE);
-#endif
-
-#ifdef USE_BLUETOOTH_SERIAL
-	initializeBluetooth();
-#endif
 
 	// Initialize channels
 	for (uint8_t i = 0; i < CHANNEL_COUNT; i++) {
@@ -143,70 +105,20 @@ void loop() {
 #endif
 
 	// Handle incoming serial data
-#ifdef USE_SERIAL
 	handleStream(g_serialStream);
-#endif
-
-#ifdef USE_BLUETOOTH_SERIAL
-	handleStream(g_btSerialStream);
-#endif
 
 	// Update animations
 	g_animationCore.Animate();
 }
 
-#ifdef USE_BLUETOOTH_SERIAL
-void initializeBluetooth() {
-	pinMode(BLUETOOTH_SERIAL_KEY_PIN, OUTPUT);
-
-	// Start bluetooth serial connection
-	g_btSerial.begin(BLUETOOTH_SERIAL_BAUD_RATE);
-
-	// Raise key to high to entire AT mode on HC-05
-	digitalWrite(BLUETOOTH_SERIAL_KEY_PIN, HIGH);
-
-	// Wait to ensure HC-05 entered AT mode
-	delay(BLUETOOTH_SERIAL_AT_DELAY);
-
-	// Read checksum and ID from EEPROM
-	uint16_t checkSum = 0;
-	EEPROM.get<uint16_t>(EEPROM_ID_LOCATION, checkSum);
-	uint32_t id = 0;
-	EEPROM.get<uint32_t>(EEPROM_ID_LOCATION + sizeof(checkSum), id);
-
-	uint32_t hash = FNV1A32(reinterpret_cast<uint8_t *>(id), sizeof(id));
-	char name[3 + sizeof(id) * 2 + 1] = "BC-";
-	if (checkSum == EEPROM_ID_CHECKSUM) {
-		snprintf(name + 3, sizeof(name) - 3, "%08lX", hash);
-	} else {
-		strcpy(name, "BC-NULL");
-	}
-
-	// Set module name
-	ATCommand::Write(g_btSerialStream, "AT", "NAME", 1, name);
-
-	// Return key to low
-	digitalWrite(BLUETOOTH_SERIAL_KEY_PIN, LOW);
-
-	// Wait to ensure HC-05 exited AT mode
-	delay(BLUETOOTH_SERIAL_AT_DELAY);
-}
-#endif
-
-#if defined(USE_SERIAL) || defined(USE_BLUETOOTH_SERIAL)
 void handleStream(TypedStream &stream) {
 	uint16_t available = stream.Available();
 	if (available > 0) {
 		// Read command
 		uint8_t command = 0;
 		if (stream.Read(command)) {
-			if (command >=
-	#ifdef USE_BLUETOOTH_SERIAL
-				kCommand_Bluetooth_Max
-	#else
-				kCommand_Max
-	#endif
-				) return;
+			if (command >= kCommand_Max) 
+				return;
 
 			// Write command back to device
 			stream.Write(command);
@@ -271,11 +183,6 @@ void handleStream(TypedStream &stream) {
 				stream.WriteUInt8(kResult_Ok);
 			} else if (command == kCommand_GetParameters) {
 				stream.SetDataTypeEnabled(true);
-#ifdef USE_BLUETOOTH_SERIAL
-				stream.WriteBoolean(true);
-#else
-				stream.WriteBoolean(false);
-#endif
 				stream.WriteUInt8(CHANNEL_COUNT);
 				stream.WriteUInt16(CHANNEL_MAX_SIZE);
 				stream.WriteUInt8(CHANNEL_MAX_BRIGHTNESS);
@@ -489,174 +396,6 @@ void handleStream(TypedStream &stream) {
 					stream.WriteUInt8(kResult_Error);
 				}
 			}
-#ifdef USE_BLUETOOTH_SERIAL
-			else if (command == kCommand_Bluetooth_GetPassword) {
-				stream.SetDataTypeEnabled(true);
-
-				// Raise key to high to entire AT mode on HC-05
-				digitalWrite(BLUETOOTH_SERIAL_KEY_PIN, HIGH);
-
-				// Wait to ensure HC-05 entered AT mode
-				delay(BLUETOOTH_SERIAL_AT_DELAY);
-
-				char buffer[BLUETOOTH_SERIAL_BUFFER_SIZE]{ 0 };
-				int16_t readSize = ATCommand::Read(g_btSerialStream, "AT", "PSWD", buffer, sizeof(buffer));
-
-				// Return key to low
-				digitalWrite(BLUETOOTH_SERIAL_KEY_PIN, LOW);
-
-				// Wait to ensure HC-05 exited AT mode
-				delay(BLUETOOTH_SERIAL_AT_DELAY);
-
-				// Send response to device
-				if (readSize > 0) {
-					char password[4]{ 0 };
-					ATCommand::GetParameter(buffer, readSize, password, sizeof(password));
-
-					stream.WriteUInt8(kResult_Ok);
-					stream.WriteString(password, sizeof(password));
-				} else {
-					stream.WriteUInt8(kResult_Bluetooth_Unavailable);
-				}
-			} else if (command == kCommand_Bluetooth_SetPassword) {
-				stream.SetDataTypeEnabled(true);
-
-				// Read password
-				char password[4 + 1]{ 0 };
-				if (!stream.ReadString(password, 4))
-					return;
-
-				// Raise key to high to entire AT mode on HC-05
-				digitalWrite(BLUETOOTH_SERIAL_KEY_PIN, HIGH);
-
-				// Wait to ensure HC-05 entered AT mode
-				delay(BLUETOOTH_SERIAL_AT_DELAY);
-
-				char buffer[BLUETOOTH_SERIAL_BUFFER_SIZE]{ 0 };
-				int16_t readSize = ATCommand::Write(g_btSerialStream, "AT", "PSWD", buffer, sizeof(buffer), 1, password);
-
-				// Return key to low
-				digitalWrite(BLUETOOTH_SERIAL_KEY_PIN, LOW);
-
-				// Wait to ensure HC-05 exited AT mode
-				delay(BLUETOOTH_SERIAL_AT_DELAY);
-
-				// Send response to device
-				if (readSize > 0) {
-					bool resultOk = strstr(buffer, "OK") != 0;
-					stream.WriteUInt8(resultOk ? kResult_Ok : kResult_Error);
-				} else {
-					stream.WriteUInt8(kResult_Bluetooth_Unavailable);
-				}
-			} else if (command == kCommand_Bluetooth_UnpairAll) { // TODO/NOTE: When paired, this sometimes returns BluetoothUnavailable
-				// Raise key to high to entire AT mode on HC-05
-				digitalWrite(BLUETOOTH_SERIAL_KEY_PIN, HIGH);
-
-				// Wait to ensure HC-05 entered AT mode
-				delay(BLUETOOTH_SERIAL_AT_DELAY);
-
-				// Unpair
-				int16_t unpairReadSize = ATCommand::Execute(g_btSerialStream, "AT", "RMAAD");
-
-				// Disconnect
-				int16_t disconnectReadSize = ATCommand::Execute(g_btSerialStream, "AT", "DISC");
-
-				// Return key to low
-				digitalWrite(BLUETOOTH_SERIAL_KEY_PIN, LOW);
-
-				// Wait to ensure HC-05 exited AT mode
-				delay(BLUETOOTH_SERIAL_AT_DELAY);
-
-				// Send response to device
-				stream.SetDataTypeEnabled(true);
-				if (unpairReadSize > 0 && disconnectReadSize > 0) {
-					stream.WriteUInt8(kResult_Ok);
-				} else {
-					stream.WriteUInt8(kResult_Bluetooth_Unavailable);
-				}
-			} else if (command == kCommand_Bluetooth_GetStatus) {
-				// Raise key to high to entire AT mode on HC-05
-				digitalWrite(BLUETOOTH_SERIAL_KEY_PIN, HIGH);
-
-				// Wait to ensure HC-05 entered AT mode
-				delay(BLUETOOTH_SERIAL_AT_DELAY);
-
-				char buffer[BLUETOOTH_SERIAL_BUFFER_SIZE]{ 0 };
-				int16_t readSize = ATCommand::Read(g_btSerialStream, "AT", "STATE", buffer, sizeof(buffer));
-
-				// Return key to low
-				digitalWrite(BLUETOOTH_SERIAL_KEY_PIN, LOW);
-
-				// Wait to ensure HC-05 exited AT mode
-				delay(BLUETOOTH_SERIAL_AT_DELAY);
-
-				// Send response to device
-				stream.SetDataTypeEnabled(true);
-				if (readSize > 0) {
-					char state[12]{ 0 };
-					ATCommand::GetParameter(buffer, readSize, state, sizeof(state));
-
-					stream.WriteUInt8(kResult_Ok);
-					stream.WriteBoolean(strcmp(state, "CONNECTED") == 0);
-				} else {
-					stream.WriteUInt8(kResult_Bluetooth_Unavailable);
-				}
-			} else if (command == kCommand_Bluetooth_GetConnectionInfo) {
-				// Raise key to high to entire AT mode on HC-05
-				digitalWrite(BLUETOOTH_SERIAL_KEY_PIN, HIGH);
-
-				// Wait to ensure HC-05 entered AT mode
-				delay(BLUETOOTH_SERIAL_AT_DELAY);
-
-				char buffer[BLUETOOTH_SERIAL_BUFFER_SIZE]{ 0 };
-
-				int16_t stateReadSize = ATCommand::Read(g_btSerialStream, "AT", "STATE", buffer, sizeof(buffer));
-				char state[12]{ 0 };
-				if (stateReadSize > 0) {
-					ATCommand::GetParameter(buffer, stateReadSize, state, sizeof(state));
-				}
-
-				int16_t addressReadSize = ATCommand::Read(g_btSerialStream, "AT", "MRAD", buffer, sizeof(buffer));
-				char address[14 + 1]{ 0 };
-				if (addressReadSize > 0) {
-					ATCommand::GetParameter(buffer, addressReadSize, address, sizeof(address));
-				}
-
-				// Replace colons in address into commas
-				for (uint8_t i = 0; i < sizeof(address); i++)
-					if (address[i] == ':')
-						address[i] = ',';
-
-				int16_t nameReadSize = ATCommand::Read(g_btSerialStream, "AT", "RNAME", buffer, sizeof(buffer), 1, address);
-				char name[32]{ 0 };
-				uint8_t nameLength = 0;
-				if (nameReadSize > 0) {
-					nameLength = ATCommand::GetParameter(buffer, nameReadSize, name, sizeof(name));
-				}
-
-				// Return key to low
-				digitalWrite(BLUETOOTH_SERIAL_KEY_PIN, LOW);
-
-				// Wait to ensure HC-05 exited AT mode
-				delay(BLUETOOTH_SERIAL_AT_DELAY);
-
-				// Send response to device
-				stream.SetDataTypeEnabled(true);
-				if (stateReadSize > 0 && addressReadSize > 0) {
-					stream.WriteUInt8(kResult_Ok);
-					if (strcmp(state, "CONNECTED") == 0 && nameReadSize > 0) {
-						stream.WriteBoolean(true);
-						stream.WriteString(address, 14);
-						stream.WriteString(name, nameLength);
-					} else {
-						stream.WriteBoolean(false);
-					}
-				} else {
-					stream.WriteUInt8(kResult_Bluetooth_Unavailable);
-				}
-			}
-#endif
 		}
 	}
 }
-#endif
