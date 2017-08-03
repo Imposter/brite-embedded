@@ -1,6 +1,6 @@
 #pragma once
 
-#define FIRMWARE_VERSION 0xB0000003
+#define FIRMWARE_VERSION 0xB0000004
 
 // NOTE: This does NOT work correctly on the Arduino Nano so do NOT use it
 // the device will be stuck in an infinite boot loop where you will not be 

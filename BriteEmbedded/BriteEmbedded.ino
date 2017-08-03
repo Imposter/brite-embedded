@@ -1,8 +1,10 @@
 #include "Config.h"
 #include "AnimationCore.h"
 #include "Hash.h"
-#include <avr/wdt.h>
 #include <EEPROM.h>
+#ifdef USE_WATCHDOG
+#include <avr/wdt.h>
+#endif
 
 // Animations
 #include "ManualAnimation.h"
@@ -22,6 +24,7 @@ enum Command : uint8_t {
 	kCommand_Reset,
 	kCommand_GetParameters,
 	kCommand_GetAnimations,
+	kCommand_Synchronize,
 
 	kCommand_SetChannelBrightness,
 	kCommand_SetChannelLedCount,
@@ -199,7 +202,12 @@ void handleStream(TypedStream &stream) {
 				stream.WriteUInt8(animCount);
 				for (uint8_t i = 0; i < animCount; i++)
 					stream.WriteUInt32(g_animations[i]->GetId());
-			} else if (command == kCommand_SetChannelBrightness) {
+			} else if (command == kCommand_Synchronize) {
+				for (uint8_t i = 0; i < CHANNEL_COUNT; i++)
+					g_animationCore.SetChannelLastAnimation(i, 0);
+				stream.WriteUInt8(kResult_Ok);
+			}
+			else if (command == kCommand_SetChannelBrightness) {
 				stream.SetDataTypeEnabled(true);
 
 				uint8_t channelIndex = 0;
