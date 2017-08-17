@@ -26,12 +26,11 @@ void SpiralAnimation::onAnimate(uint8_t channelIndex) {
 	// Animate
 	for (uint8_t i = 0; i < colors - 1; i++) {
 		int16_t start = position + i * groupSize;
-
 		const Color &currentColor = core->GetChannelAnimationColor(channelIndex, colors - i - 1);
+
 		for (int16_t j = 0; j < groupSize; j++) {
 			int16_t k = forward ? start + j : start - j;
-
-			if (k < 0) k = ledCount - 1 + k;
+			if (k < 0) k = k + ledCount;
 			if (k > ledCount) k = k - ledCount - 1;
 
 			channel->SetLedColor(k, currentColor);
@@ -85,6 +84,7 @@ void SpiralAnimation::onRequestReceived(uint8_t channelIndex, TypedStream &strea
 			if (size > ledCount)
 				return;
 
+			m_position[channelIndex] = 0;
 			m_groupSize[channelIndex] = size;
 		}
 	}
