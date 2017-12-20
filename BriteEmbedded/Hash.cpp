@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2017 Eyaz Rehman. All Rights Reserved.
+ *
+ * This file is part of Brite.
+ * Licensed under the GNU General Public License. See LICENSE file in the project
+ * root for full license information.
+ */
+
 #include "Hash.h"
 
 uint32_t FNV1A32(uint8_t *obj, uint32_t size, uint32_t prime, uint32_t offset) {

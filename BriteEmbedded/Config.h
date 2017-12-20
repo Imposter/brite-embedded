@@ -1,10 +1,18 @@
+/*
+ * Copyright (C) 2017 Eyaz Rehman. All Rights Reserved.
+ *
+ * This file is part of Brite.
+ * Licensed under the GNU General Public License. See LICENSE file in the project
+ * root for full license information.
+ */
+
 #pragma once
 
 #define FIRMWARE_VERSION 0xB0000004
 
 // NOTE: This does NOT work correctly on the Arduino Nano so do NOT use it
 // the device will be stuck in an infinite boot loop where you will not be 
-// able to upload any code
+// able to upload any code easily
 //#define USE_WATCHDOG
 
 #define STATE_LED_PIN 13
