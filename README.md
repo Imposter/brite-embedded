@@ -2,7 +2,7 @@
 ### Overview
 Brite is an open-source clone of the NZXT Hue+ or Corsair Lighting Node Pro, allowing for RGB customization for your PC case with numerous effects and the ability to control it all through software on your PC! It is designed for the Arduino platform using Atmel AVRs.
 
-## Requirements
+### Requirements
 - [Adafruit Neopixel Library](https://github.com/adafruit/Adafruit_NeoPixel) (FastLED unsupported)
 - [AltSoftSerial](https://github.com/PaulStoffregen/AltSoftSerial)
 
