@@ -4,6 +4,7 @@ Brite is an open-source clone of the NZXT Hue+ or Corsair Lighting Node Pro, all
 
 ## Requirements
 - [Adafruit Neopixel Library](https://github.com/adafruit/Adafruit_NeoPixel) (FastLED unsupported)
+- [AltSoftSerial](https://github.com/PaulStoffregen/AltSoftSerial)
 
 ### License
 Copyright (C) 2017 Eyaz Rehman. All Rights Reserved.
